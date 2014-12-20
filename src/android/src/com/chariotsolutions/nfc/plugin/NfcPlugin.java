@@ -65,7 +65,7 @@ public class NfcPlugin
     private static final String STATUS_NFC_DISABLED = "NFC_DISABLED";
     private static final String STATUS_NDEF_PUSH_DISABLED = "NDEF_PUSH_DISABLED";
 
-    private static final String TAG = "NfcPlugin";
+    private static final String ID = "NfcPlugin";
     private final List<IntentFilter> intentFilters = new ArrayList<IntentFilter>();
     private final ArrayList<String[]> techLists = new ArrayList<String[]>();
 
@@ -87,17 +87,15 @@ public class NfcPlugin
     public boolean execute(String action, JSONArray data, CallbackContext callbackContext)
             throws JSONException
     {
-        Log.wtf("TEST", action);
-        Log.e("TEST", action);
         Log.i("TEST", action);
 
         if (data.length() == 0)
         {
-            Log.d(TAG, "execute command " + action);
+            Log.d(ID, "execute command " + action);
         }
         else
         {
-            Log.d(TAG, "execute command " + action + " with " + data.toString());
+            Log.d(ID, "execute command " + action + " with " + data.toString());
         }
 
         if (!getNfcStatus().equals(STATUS_NFC_OK))
@@ -211,57 +209,14 @@ public class NfcPlugin
     private void connect(final CallbackContext callbackContext)
             throws JSONException
     {
-        Log.d(TAG, "## connect ");
+        Log.e(ID, "## connect ");
         try
         {
-            /*
-             if (savedIntent == null)
-             {
-             callbackContext.error("No intent");
-             }
-
-             if (isoDep != null || isoDep.isConnected() )
-             {
-             callbackContext.error("Already connected");
-             }
-             */
-
-            this.cordova.getThreadPool().execute(new Runnable()
-            {
-                @Override
-                public void run()
-                {
-
-                    try
-                    {
-                        if (tag == null)
-                        {
-                            //tag = (Tag) savedIntent.getParcelableExtra(NfcAdapter.EXTRA_TAG);
-                            tag = (Tag) getIntent().getParcelableExtra(NfcAdapter.EXTRA_TAG);
-                        }
-
-                        isoDep = IsoDep.get(tag);
-                        if (isoDep == null)
-                        {
-                            callbackContext.error("No Mifare card?!");
-                        }
-
-                        isoDep.connect();
-                        isoDep.setTimeout(5000);
-                    }
-                    catch (IOException ex)
-                    {
-                        Log.e(TAG, "Can't connect to IsoDep", ex);
-                    }
-                }
-            });
-
-            callbackContext.success();
-
+            this.cordova.getThreadPool().execute(new NfcConnect(this, callbackContext));
         }
         catch (Throwable e)
         {
-            Log.e(TAG, "## EXCEPTION ", e);
+            Log.e(ID, "## EXCEPTION ", e);
             callbackContext.error("Ups " + e.getMessage());
         }
     }
@@ -272,23 +227,14 @@ public class NfcPlugin
     private void close(CallbackContext callbackContext)
             throws JSONException
     {
-        Log.w(TAG, "## close ");
+        Log.e(ID, "## close ");
         try
         {
-            if (isoDep == null || !isoDep.isConnected())
-            {
-                callbackContext.error("Not connected");
-            }
-
-            isoDep.close();
-            isoDep = null;
-
-            callbackContext.success();
-
+            this.cordova.getThreadPool().execute(new NfcClose(this, callbackContext));
         }
         catch (Throwable e)
         {
-            Log.e(TAG, "## EXCEPTION ", e);
+            Log.e(ID, "## EXCEPTION ", e);
             callbackContext.error("Ups " + e.getMessage());
         }
     }
@@ -296,28 +242,40 @@ public class NfcPlugin
     /**
      * APDU
      */
-    private void transceive(JSONArray data, CallbackContext callbackContext)
+    private void transceive(final JSONArray data, final CallbackContext callbackContext)
             throws JSONException
     {
-        Log.w(TAG, "## transceive <" + data.getString(0));
+        Log.e(ID, "## transceive < " + data.getString(0));
         try
         {
-            if (isoDep == null || !isoDep.isConnected())
+            if (1 == 2)
             {
-                callbackContext.error("Not connected");
+                this.cordova.getThreadPool().execute(new NfcTransceive(this, data, callbackContext));
             }
+            else
+            {
+                if (isoDep == null)
+                {
+                    Log.e(ID, "No Tech");
+                    callbackContext.error("No Tech");
+                }
+                if (!isoDep.isConnected())
+                {
+                    Log.e(ID, "Not connected");
+                    callbackContext.error("Not connected");
+                }
 
-            byte[] commandAPDU = hex2Byte(data.getString(0));
-            byte[] responseAPDU = isoDep.transceive(commandAPDU);
+                byte[] commandAPDU = hex2Byte(data.getString(0));
+                byte[] responseAPDU = isoDep.transceive(commandAPDU);
 
-            Log.w(TAG, "## transceive >" + byte2Hex(responseAPDU));
+                Log.e(ID, "## transceive > " + byte2Hex(responseAPDU));
 
-            callbackContext.success(byte2Hex(responseAPDU));
-
+                callbackContext.success(byte2Hex(responseAPDU));
+            }
         }
         catch (Throwable e)
         {
-            Log.e(TAG, "## EXCEPTION ", e);
+            Log.e(ID, "## EXCEPTION ", e);
             callbackContext.error("Ups " + e.getMessage());
         }
     }
@@ -329,20 +287,16 @@ public class NfcPlugin
 
     private String byte2Hex(final byte[] b)
     {
-
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < b.length; i++)
         {
             sb.append(Integer.toString((b[i] & 0xff) + 0x100, 16).substring(1));
         }
         return sb.toString();
-
     }
 
     private String getNfcStatus()
     {
-        Log.e(TAG, "----- getNfcStatus -----");
-
         NfcAdapter nfcAdapter = NfcAdapter.getDefaultAdapter(getActivity());
         if (nfcAdapter == null)
         {
@@ -407,7 +361,7 @@ public class NfcPlugin
 
     private void init(CallbackContext callbackContext)
     {
-        Log.d(TAG, "Enabling plugin " + getIntent());
+        Log.d(ID, "Enabling plugin " + getIntent());
 
         startNfc();
         if (!recycledIntent())
@@ -666,7 +620,7 @@ public class NfcPlugin
                     catch (IllegalStateException e)
                     {
                         // issue 110 - user exits app with home button while nfc is initializing
-                        Log.w(TAG, "Illegal State Exception starting NFC. Assuming application is terminating.");
+                        Log.w(ID, "Illegal State Exception starting NFC. Assuming application is terminating.");
                     }
 
                 }
@@ -676,7 +630,7 @@ public class NfcPlugin
 
     private void stopNfc()
     {
-        Log.d(TAG, "stopNfc");
+        Log.d(ID, "stopNfc");
         getActivity().runOnUiThread(new Runnable()
         {
             @Override
@@ -694,7 +648,7 @@ public class NfcPlugin
                     catch (IllegalStateException e)
                     {
                         // issue 125 - user exits app with back button while nfc
-                        Log.w(TAG, "Illegal State Exception stopping NFC. Assuming application is terminating.");
+                        Log.w(ID, "Illegal State Exception stopping NFC. Assuming application is terminating.");
                     }
                 }
             }
@@ -870,10 +824,10 @@ public class NfcPlugin
             @Override
             public void run()
             {
-                Log.d(TAG, "parseMessage " + getIntent());
+                Log.d(ID, "parseMessage " + getIntent());
                 Intent intent = getIntent();
                 String action = intent.getAction();
-                Log.d(TAG, "action " + action);
+                Log.d(ID, "action " + action);
                 if (action == null)
                 {
                     return;
@@ -892,7 +846,7 @@ public class NfcPlugin
                 {
                     for (String tagTech : tag.getTechList())
                     {
-                        Log.d(TAG, tagTech);
+                        Log.d(ID, tagTech);
                         if (tagTech.equals(NdefFormatable.class.getName()))
                         {
                             fireNdefFormatableEvent(tag);
@@ -922,24 +876,30 @@ public class NfcPlugin
         String tagAsString = jsonObject.toString();
 
         String command = MessageFormat.format(javaScriptEventTemplate, type, tagAsString);
-        Log.v(TAG, command);
+        Log.v(ID, command);
         this.webView.sendJavascript(command);
 
     }
 
     private void fireNdefFormatableEvent(Tag tag)
     {
-        this.tag = tag; // ADPU
         String command = MessageFormat.format(javaScriptEventTemplate, NDEF_FORMATABLE, Util.tagToJSON(tag));
-        Log.v(TAG, command);
+        Log.v(ID, command);
         this.webView.sendJavascript(command);
     }
 
     private void fireTagEvent(Tag tag)
     {
-        this.tag = tag; // ADPU
         String command = MessageFormat.format(javaScriptEventTemplate, TAG_DEFAULT, Util.tagToJSON(tag));
-        Log.v(TAG, command);
+        Log.v(ID, command);
+        this.webView.sendJavascript(command);
+    }
+
+    private void fireConnected(Tag tag)
+    {
+        Log.e(ID, "fireConnected" + tag);
+        String command = MessageFormat.format(javaScriptEventTemplate, "nfc-connected", Util.tagToJSON(tag));
+        Log.e(ID, command);
         this.webView.sendJavascript(command);
     }
 
@@ -966,7 +926,7 @@ public class NfcPlugin
 
                 if (messages.length > 1)
                 {
-                    Log.wtf(TAG, "Expected one ndefMessage but found " + messages.length);
+                    Log.wtf(ID, "Expected one ndefMessage but found " + messages.length);
                 }
 
             }
@@ -985,7 +945,7 @@ public class NfcPlugin
         int flags = getIntent().getFlags();
         if ((flags & Intent.FLAG_ACTIVITY_LAUNCHED_FROM_HISTORY) == Intent.FLAG_ACTIVITY_LAUNCHED_FROM_HISTORY)
         {
-            Log.i(TAG, "Launched from history, killing recycled intent");
+            Log.i(ID, "Launched from history, killing recycled intent");
             setIntent(new Intent());
             return true;
         }
@@ -995,7 +955,7 @@ public class NfcPlugin
     @Override
     public void onPause(boolean multitasking)
     {
-        Log.d(TAG, "onPause " + getIntent());
+        Log.d(ID, "onPause " + getIntent());
         super.onPause(multitasking);
         if (multitasking)
         {
@@ -1007,7 +967,7 @@ public class NfcPlugin
     @Override
     public void onResume(boolean multitasking)
     {
-        Log.d(TAG, "onResume " + getIntent());
+        Log.d(ID, "onResume " + getIntent());
         super.onResume(multitasking);
         startNfc();
     }
@@ -1015,7 +975,7 @@ public class NfcPlugin
     @Override
     public void onNewIntent(Intent intent)
     {
-        Log.d(TAG, "onNewIntent " + intent);
+        Log.d(ID, "onNewIntent " + intent);
         super.onNewIntent(intent);
         setIntent(intent);
         savedIntent = intent;
@@ -1061,5 +1021,167 @@ public class NfcPlugin
             shareTagCallback.sendPluginResult(result);
         }
 
+    }
+
+    public Intent getSavedIntent()
+    {
+        return savedIntent;
+    }
+
+    public void setSavedIntent(Intent savedIntent)
+    {
+        this.savedIntent = savedIntent;
+    }
+
+    class NfcConnect
+            implements Runnable
+    {
+
+        NfcPlugin nfcPlugin;
+        CallbackContext callbackContext;
+
+        NfcConnect(NfcPlugin nfcPlugin, CallbackContext callbackContext)
+        {
+            this.nfcPlugin = nfcPlugin;
+            this.callbackContext = callbackContext;
+        }
+
+        @Override
+        public void run()
+        {
+            try
+            {
+                if (nfcPlugin.tag == null)
+                {
+                    nfcPlugin.tag = (Tag) getIntent().getParcelableExtra(NfcAdapter.EXTRA_TAG);
+                }
+                if (nfcPlugin.tag == null)
+                {
+                    nfcPlugin.tag = (Tag) nfcPlugin.savedIntent.getParcelableExtra(NfcAdapter.EXTRA_TAG);
+                }
+                if (nfcPlugin.tag == null)
+                {
+                    Log.e(ID, "No Tag");
+                    callbackContext.error("No Tag");
+                }
+
+                nfcPlugin.isoDep = IsoDep.get(tag);
+                if (nfcPlugin.isoDep == null)
+                {
+                    Log.e(ID, "No Tech");
+                    callbackContext.error("No Tech");
+                }
+
+                Log.e(ID, "## connect... ");
+                nfcPlugin.isoDep.connect();
+                nfcPlugin.isoDep.setTimeout(3000);
+                Log.e(ID, "## connected ");
+
+                nfcPlugin.fireConnected(nfcPlugin.tag);
+
+                callbackContext.success();
+            }
+            catch (IOException ex)
+            {
+                Log.e(ID, "Can't connect to IsoDep", ex);
+            }
+        }
+    }
+
+    class NfcClose
+            implements Runnable
+    {
+
+        NfcPlugin nfcPlugin;
+        CallbackContext callbackContext;
+
+        NfcClose(NfcPlugin nfcPlugin, CallbackContext callbackContext)
+        {
+            this.nfcPlugin = nfcPlugin;
+            this.callbackContext = callbackContext;
+        }
+
+        @Override
+        public void run()
+        {
+            try
+            {
+                if (nfcPlugin.isoDep == null)
+                {
+                    // TODO: no error - just return
+                    Log.e(ID, "No Tech");
+                    callbackContext.error("No Tech");
+                }
+                if (!isoDep.isConnected())
+                {
+                    // TODO: no error - just return
+                    Log.e(ID, "Not connected");
+                    callbackContext.error("Not connected");
+                }
+
+                Log.e(ID, "## close... ");
+                nfcPlugin.isoDep.close();
+                nfcPlugin.isoDep = null;
+                Log.e(ID, "## closed ");
+
+//                nfcPlugin.fireClosed(nfcPlugin.tag);
+                callbackContext.success();
+            }
+            catch (IOException ex)
+            {
+                Log.e(ID, "Can't connect to IsoDep", ex);
+            }
+        }
+    }
+
+    class NfcTransceive
+            implements Runnable
+    {
+
+        NfcPlugin nfcPlugin;
+        JSONArray data;
+        CallbackContext callbackContext;
+
+        NfcTransceive(NfcPlugin nfcPlugin, JSONArray data, CallbackContext callbackContext)
+        {
+            this.nfcPlugin = nfcPlugin;
+            this.data = data;
+            this.callbackContext = callbackContext;
+        }
+
+        @Override
+        public void run()
+        {
+            try
+            {
+                if (nfcPlugin.isoDep == null)
+                {
+                    Log.e(ID, "No Tech");
+                    callbackContext.error("No Tech");
+                }
+                if (!nfcPlugin.isoDep.isConnected())
+                {
+                    Log.e(ID, "Not connected");
+                    callbackContext.error("Not connected");
+                }
+
+                byte[] commandAPDU = nfcPlugin.hex2Byte(data.getString(0));
+                byte[] responseAPDU = nfcPlugin.isoDep.transceive(commandAPDU);
+
+                Log.e(ID, "## transceive > " + nfcPlugin.byte2Hex(responseAPDU));
+
+                callbackContext.success(nfcPlugin.byte2Hex(responseAPDU));
+
+                callbackContext.success();
+            }
+            catch (IOException ex)
+            {
+                Log.e(ID, "Can't connect to IsoDep", ex);
+            }
+            catch (JSONException ex)
+            {
+                Log.e(ID, "Can't get data", ex);
+            }
+        }
     }
 }

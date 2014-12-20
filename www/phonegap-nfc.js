@@ -431,12 +431,14 @@ var nfc = {
     },
 
     // APDU
-    connect: function (win, fail) {	    
+    connect: function (callback, win, fail) {
+	document.addEventListener("nfc-connected", callback, false);
         cordova.exec(win, fail, "NfcPlugin", "connect", []);
     },
 
     // APDU
-    close: function (win, fail) {
+    close: function (callback, win, fail) {
+	document.removeEventListener("nfc-connected", callback, false);
         cordova.exec(win, fail, "NfcPlugin", "close", []);
     },
 

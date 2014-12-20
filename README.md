@@ -5,7 +5,7 @@ Near Field Communication (NFC) Plugin. Read and write NDEF messages to tags or s
 
 Supported Platforms
 -------------------
-* Android
+* Android (added IsoDep Support)
 * Windows Phone 8
 * BlackBerry 10
 * BlackBerry 7
