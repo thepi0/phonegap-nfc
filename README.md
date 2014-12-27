@@ -53,6 +53,11 @@ Note: BlackBerry 7 support is only available for Cordova 2.x. For applications t
 - [nfc.handover](#nfchandover)
 - [nfc.stopHandover](#nfcstophandover)
 
+### IsoDep Methods
+- [nfc.connect](#nfcconnect)
+- [nfc.transceive] (#nfctransceive)
+- [nfc.close] (#nfcclose)
+
 ## nfc.addNdefListener
 
 Registers an event listener for any NDEF tag.
@@ -335,6 +340,92 @@ Function `nfc.stopHandover` stops sharing data via peer-to-peer.
 ### Supported Platforms
 
 - Android
+
+
+
+## nfc.connect
+
+    onDeviceReady: function () {
+      app.showTxt("Cordova is ready");
+
+      nfc.addTagDiscoveredListener(
+	app.onNfc,
+	function () {
+        },
+        function (reason) {
+	  alert("Ups: " + reason);
+        }
+      );
+    },
+    onNfc: function (nfcEvent) {
+      app.showTxt('onNfc');
+
+      var tag = nfcEvent.tag;
+	
+      nfc.connect(
+	app.onConnected, // chipcard connected
+	function ()       { app.showTxt('connection successful'); },
+	function (reason) { app.showTxt('connect failed: ' + reason); }
+      );		
+    },
+
+### Parameters
+
+- __onConnect__: The callback that is called when a NFC tag connects.
+- __onSuccess__: (Optional) The callback that is called on success.
+- __onFailure__: (Optional) The callback that is called if there was an error.
+
+### Supported Platforms
+
+- Android
+
+
+
+## nfc.transceive
+
+    onConnected: function () {
+    
+      nfc.transceive(
+	"00a40...",       // RequestAPDU
+        function (data) { // ResponseAPDU
+	  app.showTxt("transceive successful: " + data);
+        },
+        function (reason) {
+	  app.showTxt("transceive failed: " + reason);
+        }
+      );
+        
+### Parameters
+
+- __data__: Hex data to send (RequestAPDU).
+- __onSuccess__: Hex data received (ResponseAPDU).
+- __onFailure__: (Optional) The callback that is called if there was an error.
+
+### Supported Platforms
+
+- Android
+
+
+
+## nfc.close
+
+    nfc.close(
+      app.onConnected, // remove hander
+      function ()       { app.showTxt('close successful'); },
+      function (reason) { app.showTxt('close failed: ' + reason); }
+    );
+
+### Parameters
+
+- __onConnect__: The callback that is removed when the NFC tag disconnects.
+- __onSuccess__: (Optional) The callback that is called on success.
+- __onFailure__: (Optional) The callback that is called if there was an error.
+
+### Supported Platforms
+
+- Android
+
+
 
 # NDEF
 
