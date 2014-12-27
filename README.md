@@ -345,28 +345,27 @@ Function `nfc.stopHandover` stops sharing data via peer-to-peer.
 
 ## nfc.connect
 
+IsoDep method.
+
     onDeviceReady: function () {
       app.showTxt("Cordova is ready");
 
       nfc.addTagDiscoveredListener(
-	app.onNfc,
-	function () {
-        },
-        function (reason) {
-	  alert("Ups: " + reason);
-        }
+        app.onNfc,
+        function () { },
+        function (reason) { alert("Ups: " + reason); }
       );
     },
     onNfc: function (nfcEvent) {
       app.showTxt('onNfc');
 
       var tag = nfcEvent.tag;
-	
+  
       nfc.connect(
-	app.onConnected, // chipcard connected
-	function ()       { app.showTxt('connection successful'); },
-	function (reason) { app.showTxt('connect failed: ' + reason); }
-      );		
+        app.onConnected, // chipcard connected
+        function ()       { app.showTxt('connection successful'); },
+        function (reason) { app.showTxt('connect failed: ' + reason); }
+      );    
     },
 
 ### Parameters
@@ -383,15 +382,17 @@ Function `nfc.stopHandover` stops sharing data via peer-to-peer.
 
 ## nfc.transceive
 
+IsoDep method.
+
     onConnected: function () {
     
       nfc.transceive(
-	"00a40...",       // RequestAPDU
+        "00a40...",       // RequestAPDU
         function (data) { // ResponseAPDU
-	  app.showTxt("transceive successful: " + data);
+          app.showTxt("transceive successful: " + data);
         },
         function (reason) {
-	  app.showTxt("transceive failed: " + reason);
+          app.showTxt("transceive failed: " + reason);
         }
       );
         
@@ -408,6 +409,8 @@ Function `nfc.stopHandover` stops sharing data via peer-to-peer.
 
 
 ## nfc.close
+
+IsoDep method.
 
     nfc.close(
       app.onConnected, // remove hander
