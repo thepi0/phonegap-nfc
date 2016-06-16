@@ -265,7 +265,18 @@ public class NfcPlugin
                     callbackContext.error("Not connected");
                 }
 
-                byte[] commandAPDU = hex2Byte(data.getString(0));
+                //byte[] commandAPDU = hex2Byte(data.getString(0));
+                byte[] commandAPDU = {
+                        (byte) 0x90, // CLA
+                        (byte) 0x5A, // INS
+                        (byte) 0x0, // P1
+                        (byte) 0x0, // P2
+                        (byte) 0x03, // Lc
+                        (byte) 0x12, // Command Data
+                        (byte) 0x20, // Command Data
+                        (byte) 0xEF, // Command Data
+                        (byte) 0x0 // Le
+                };
                 byte[] responseAPDU = isoDep.transceive(commandAPDU);
 
                 Log.e(ID, "## transceive > " + byte2Hex(responseAPDU));
@@ -1165,7 +1176,18 @@ public class NfcPlugin
                     callbackContext.error("Not connected");
                 }
 
-                byte[] commandAPDU = nfcPlugin.hex2Byte(data.getString(0));
+                //byte[] commandAPDU = nfcPlugin.hex2Byte(data.getString(0));
+                byte[] commandAPDU = {
+                        (byte) 0x90, // CLA
+                        (byte) 0x5A, // INS
+                        (byte) 0x0, // P1
+                        (byte) 0x0, // P2
+                        (byte) 0x03, // Lc
+                        (byte) 0x12, // Command Data
+                        (byte) 0x20, // Command Data
+                        (byte) 0xEF, // Command Data
+                        (byte) 0x0 // Le
+                };
                 byte[] responseAPDU = nfcPlugin.isoDep.transceive(commandAPDU);
 
                 Log.e(ID, "## transceive > " + nfcPlugin.byte2Hex(responseAPDU));
