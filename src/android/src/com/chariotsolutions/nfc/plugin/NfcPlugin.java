@@ -265,18 +265,18 @@ public class NfcPlugin
                     callbackContext.error("Not connected");
                 }
 
-                //byte[] commandAPDU = hex2Byte(data.getString(0));
-                byte[] commandAPDU = {
-                    (data.getString(0)) 0x90, // CLA
-                    (data.getString(0)) 0x5A, // INS
-                    (data.getString(0)) 0x0, // P1
-                    (data.getString(0)) 0x0, // P2
-                    (data.getString(0)) 0x03, // Lc
-                    (data.getString(0)) 0x12, // Command Data
-                    (data.getString(0)) 0x20, // Command Data
-                    (data.getString(0)) 0xEF, // Command Data
-                    (data.getString(0)) 0x0 // Le
-                };
+                byte[] commandAPDU = hex2Byte(data.getString(0));
+                /*byte[] commandAPDU = {
+                    (byte) 0x90, // CLA
+                    (byte) 0x5A, // INS
+                    (byte) 0x0, // P1
+                    (byte) 0x0, // P2
+                    (byte) 0x03, // Lc
+                    (byte) 0x12, // Command Data
+                    (byte) 0x20, // Command Data
+                    (byte) 0xEF, // Command Data
+                    (byte) 0x0 // Le
+                };*/
                 
                 byte[] responseAPDU = isoDep.transceive(commandAPDU);
 
@@ -292,7 +292,7 @@ public class NfcPlugin
             callbackContext.error("Ups " + e.getMessage());
         }
     }
-
+    
     private byte[] hex2Byte(final String hex)
     {
         return new BigInteger(hex, 16).toByteArray();
@@ -1178,18 +1178,18 @@ public class NfcPlugin
                     callbackContext.error("Not connected");
                 }
 
-                //byte[] commandAPDU = nfcPlugin.hex2Byte(data.getString(0));
-                byte[] commandAPDU = {
-                	(data.getString(0)) 0x90, // CLA
-                    (data.getString(0)) 0x5A, // INS
-                    (data.getString(0)) 0x0, // P1
-                    (data.getString(0)) 0x0, // P2
-                    (data.getString(0)) 0x03, // Lc
-                    (data.getString(0)) 0x12, // Command Data
-                    (data.getString(0)) 0x20, // Command Data
-                    (data.getString(0)) 0xEF, // Command Data
-                    (data.getString(0)) 0x0 // Le
-                };
+                byte[] commandAPDU = nfcPlugin.hex2Byte(data.getString(0));
+                /*byte[] commandAPDU = {
+                    (byte) 0x90, // CLA
+                    (byte) 0x5A, // INS
+                    (byte) 0x0, // P1
+                    (byte) 0x0, // P2
+                    (byte) 0x03, // Lc
+                    (byte) 0x12, // Command Data
+                    (byte) 0x20, // Command Data
+                    (byte) 0xEF, // Command Data
+                    (byte) 0x0 // Le
+                };*/
                 
                 byte[] responseAPDU = nfcPlugin.isoDep.transceive(commandAPDU);
 
