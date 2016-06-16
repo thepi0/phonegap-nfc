@@ -267,7 +267,7 @@ public class NfcPlugin
 
                 //byte[] commandAPDU = hex2Byte(data.getString(0));
                 byte[] commandAPDU = {
-                	(data.getString(0)) 0x90, // CLA
+                    (data.getString(0)) 0x90, // CLA
                     (data.getString(0)) 0x5A, // INS
                     (data.getString(0)) 0x0, // P1
                     (data.getString(0)) 0x0, // P2
@@ -277,9 +277,11 @@ public class NfcPlugin
                     (data.getString(0)) 0xEF, // Command Data
                     (data.getString(0)) 0x0 // Le
                 };
+                
                 byte[] responseAPDU = isoDep.transceive(commandAPDU);
 
                 Log.e(ID, "## transceive > " + byte2Hex(responseAPDU));
+                Log.e(ID, "## transceive > " + responseAPDU);
 
                 callbackContext.success(byte2Hex(responseAPDU));
             }
@@ -1188,9 +1190,11 @@ public class NfcPlugin
                     (data.getString(0)) 0xEF, // Command Data
                     (data.getString(0)) 0x0 // Le
                 };
+                
                 byte[] responseAPDU = nfcPlugin.isoDep.transceive(commandAPDU);
 
                 Log.e(ID, "## transceive > " + nfcPlugin.byte2Hex(responseAPDU));
+                Log.e(ID, "## transceive > " + responseAPDU);
 
                 callbackContext.success(nfcPlugin.byte2Hex(responseAPDU));
 
