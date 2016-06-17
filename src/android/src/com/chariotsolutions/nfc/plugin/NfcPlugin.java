@@ -265,8 +265,9 @@ public class NfcPlugin
                     callbackContext.error("Not connected");
                 }
 
-                byte[] commandAPDU = hex2Byte(data.getString(0));
-                /*byte[] commandAPDU = {
+                Log.e(ID, "hex2byte: " + hex2Byte(data.getString(0)));
+                //byte[] commandAPDU = hex2Byte(data.getString(0));
+                byte[] commandAPDU = {
                     (byte) 0x90, // CLA
                     (byte) 0x5A, // INS
                     (byte) 0x0, // P1
@@ -276,12 +277,13 @@ public class NfcPlugin
                     (byte) 0x20, // Command Data
                     (byte) 0xEF, // Command Data
                     (byte) 0x0 // Le
-                };*/
-                
+                };
+
                 byte[] responseAPDU = isoDep.transceive(commandAPDU);
 
-                Log.e(ID, "## transceive > " + byte2Hex(responseAPDU));
-                Log.e(ID, "## transceive > " + responseAPDU);
+                Log.e(ID, "## THIS IS THE PRIVATE VOID FUNCTION");
+
+                Log.e(ID, "## RECEIVE transceive > " + byte2Hex(responseAPDU));
 
                 callbackContext.success(byte2Hex(responseAPDU));
             }
@@ -292,7 +294,7 @@ public class NfcPlugin
             callbackContext.error("Ups " + e.getMessage());
         }
     }
-    
+
     private byte[] hex2Byte(final String hex)
     {
         return new BigInteger(hex, 16).toByteArray();
@@ -1178,8 +1180,9 @@ public class NfcPlugin
                     callbackContext.error("Not connected");
                 }
 
-                byte[] commandAPDU = nfcPlugin.hex2Byte(data.getString(0));
-                /*byte[] commandAPDU = {
+                Log.e(ID, "hex2byte: " + nfcPlugin.hex2Byte(data.getString(0)));
+                //byte[] commandAPDU = nfcPlugin.hex2Byte(data.getString(0));
+                byte[] commandAPDU = {
                     (byte) 0x90, // CLA
                     (byte) 0x5A, // INS
                     (byte) 0x0, // P1
@@ -1189,12 +1192,13 @@ public class NfcPlugin
                     (byte) 0x20, // Command Data
                     (byte) 0xEF, // Command Data
                     (byte) 0x0 // Le
-                };*/
-                
+                };
+
                 byte[] responseAPDU = nfcPlugin.isoDep.transceive(commandAPDU);
 
-                Log.e(ID, "## transceive > " + nfcPlugin.byte2Hex(responseAPDU));
-                Log.e(ID, "## transceive > " + responseAPDU);
+                Log.e(ID, "## THIS IS THE CLASS FUNCTION");
+
+                Log.e(ID, "## RECEIVE transceive > " + nfcPlugin.byte2Hex(responseAPDU));
 
                 callbackContext.success(nfcPlugin.byte2Hex(responseAPDU));
 
