@@ -24,6 +24,7 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.nio.charset.StandardCharsets;
 import org.apache.cordova.CallbackContext;
 import org.apache.cordova.CordovaPlugin;
 import org.apache.cordova.PluginResult;
@@ -360,16 +361,37 @@ public class NfcPlugin
               callbackContext.error("Not connected");
           }
 
-          byte[] commandAPDU = {
+          String jsonarray = data.getString(0);
+
+          byte[] commandAPDU = hexStringToByteArray(jsonarray);
+
+          byte[] responseAPDU = isoDep.transceive(commandAPDU);
+
+          Log.e(ID, "## RESPONSEAPDU RECEIVED: " + byte2Hex(responseAPDU));
+
+          callbackContext.success(byte2Hex(responseAPDU));
+
+          //byte[] commandAPDU = byte2Hex(hexStringToByteArray(jsonarray));
+
+          /*
+          byte[] commandAPDU2 = {
             (byte) 0x90,
-            (byte) 0x5A, // SELECT FILE
+            (byte) 0x60, // SELECT FILE
             (byte) 0x00, // (byte) 0x04,// Direct selection by DF name
             (byte) 0x00, // Select First record 00 , last re 01 , next record 02
-            (byte) 0x03, // length of command data
-            (byte) 0x11,
-            (byte) 0x20,
-            (byte) 0Xef,
-            (byte) 0X00 // HSL DFname EF2011
+            (byte) 0x00
+          };
+          */
+
+
+
+          /*
+          byte[] commandAPDU = {
+            (byte) 0x90,
+            (byte) 0x60, // SELECT FILE
+            (byte) 0x00, // (byte) 0x04,// Direct selection by DF name
+            (byte) 0x00, // Select First record 00 , last re 01 , next record 02
+            (byte) 0x00
           };
 
           Log.e(ID, "## COMMANDAPDU SEND: " + byte2Hex(commandAPDU));
@@ -378,33 +400,8 @@ public class NfcPlugin
 
           Log.e(ID, "## RESPONSEAPDU RECEIVED: " + byte2Hex(responseAPDU));
 
-          byte[] commandAPDU2 = {
-            (byte) 0x90, // CLA
-            (byte) 0xBD,
-            (byte) 0x00,
-            (byte) 0x00,
-            (byte) 0x07,
-            (byte) 0x08,
-            (byte) 0x00,
-            (byte) 0x00,
-            (byte) 0x00,
-            (byte) 0x0b,
-            (byte) 0x00,
-            (byte) 0x00,
-            (byte) 0x00
-          };
-
-          Log.e(ID, "## COMMANDAPDU2 SEND: " + byte2Hex(commandAPDU2));
-
-          byte[] responseAPDU2 = isoDep.transceive(commandAPDU2);
-
-          Log.e(ID, "## RESPONSEAPDU2 RECEIVED: " + byte2Hex(responseAPDU2));
-
-          String cardnumber = BCDtoString(responseAPDU2).substring(2, 20);
-
-          Log.e(ID, "## CARD NUMBER: " + cardnumber);
-
           callbackContext.success(byte2Hex(responseAPDU));
+          */
 
         }
         catch (Throwable e)
@@ -412,6 +409,16 @@ public class NfcPlugin
             Log.e(ID, "## EXCEPTION ", e);
             callbackContext.error("Ups " + e.getMessage());
         }
+    }
+
+    public static byte[] hexStringToByteArray(String s) {
+        int len = s.length();
+        byte[] data = new byte[len / 2];
+        for (int i = 0; i < len; i += 2) {
+            data[i / 2] = (byte) ((Character.digit(s.charAt(i), 16) << 4)
+                                 + Character.digit(s.charAt(i+1), 16));
+        }
+        return data;
     }
 
     private byte[] hex2Byte(final String hex)
