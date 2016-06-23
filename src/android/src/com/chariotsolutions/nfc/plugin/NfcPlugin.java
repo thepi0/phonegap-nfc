@@ -39,6 +39,7 @@ public class NfcPlugin
     private static final String CONNECT = "connect";
     private static final String CLOSE = "close";
     private static final String TRANSCEIVE = "transceive";
+    private static final String GETCARDNUMBER = "getcardnumber";
 
     private static final String REGISTER_MIME_TYPE = "registerMimeType";
     private static final String REMOVE_MIME_TYPE = "removeMimeType";
@@ -194,6 +195,12 @@ public class NfcPlugin
             transceive(data, callbackContext);
 
         }
+        else if (action.equalsIgnoreCase(GETCARDNUMBER))
+        {
+            // APDU
+            getcardnumber(callbackContext);
+
+        }
         else
         {
             // invalid action
@@ -242,51 +249,163 @@ public class NfcPlugin
     /**
      * APDU
      */
+
+     private String BCDtoString(byte[] bytes) {
+
+        StringBuffer number = new StringBuffer();
+
+        for (byte bcd : bytes) {
+            StringBuffer sb = new StringBuffer();
+
+            byte high = (byte) (bcd & 0xf0);
+            high = (byte) ((high >>> 4) & 0xff);
+            high = (byte) (high & 0x0f);
+            byte low = (byte) (bcd & 0x0f);
+
+            sb.append(high);
+            sb.append(low);
+
+            number.append(sb.toString());
+        }
+
+        return number.toString();
+    }
+
+    private void getcardnumber(final CallbackContext callbackContext)
+            throws JSONException
+    {
+        try
+        {
+
+          if (isoDep == null)
+          {
+              Log.e(ID, "No Tech");
+              callbackContext.error("No Tech");
+          }
+          if (!isoDep.isConnected())
+          {
+              Log.e(ID, "Not connected");
+              callbackContext.error("Not connected");
+          }
+
+          byte[] commandAPDU = {
+            (byte) 0x90,
+            (byte) 0x5A, // SELECT FILE
+            (byte) 0x00, // (byte) 0x04,// Direct selection by DF name
+            (byte) 0x00, // Select First record 00 , last re 01 , next record 02
+            (byte) 0x03, // length of command data
+            (byte) 0x11,
+            (byte) 0x20,
+            (byte) 0Xef,
+            (byte) 0X00 // HSL DFname EF2011
+          };
+
+          Log.e(ID, "## COMMANDAPDU SEND: " + byte2Hex(commandAPDU));
+
+          byte[] responseAPDU = isoDep.transceive(commandAPDU);
+
+          Log.e(ID, "## RESPONSEAPDU RECEIVED: " + byte2Hex(responseAPDU));
+
+          byte[] commandAPDU2 = {
+            (byte) 0x90, // CLA
+            (byte) 0xBD,
+            (byte) 0x00,
+            (byte) 0x00,
+            (byte) 0x07,
+            (byte) 0x08,
+            (byte) 0x00,
+            (byte) 0x00,
+            (byte) 0x00,
+            (byte) 0x0b,
+            (byte) 0x00,
+            (byte) 0x00,
+            (byte) 0x00
+          };
+
+          Log.e(ID, "## COMMANDAPDU2 SEND: " + byte2Hex(commandAPDU2));
+
+          byte[] responseAPDU2 = isoDep.transceive(commandAPDU2);
+
+          Log.e(ID, "## RESPONSEAPDU2 RECEIVED: " + byte2Hex(responseAPDU2));
+
+          String cardnumber = BCDtoString(responseAPDU2).substring(2, 20);
+
+          Log.e(ID, "## CARD NUMBER: " + cardnumber);
+
+          callbackContext.success(byte2Hex(responseAPDU));
+
+        }
+        catch (Throwable e)
+        {
+            Log.e(ID, "## EXCEPTION ", e);
+            callbackContext.error("Ups " + e.getMessage());
+        }
+    }
+
     private void transceive(final JSONArray data, final CallbackContext callbackContext)
             throws JSONException
     {
         Log.e(ID, "## transceive < " + data.getString(0));
         try
         {
-            if (1 == 2)
-            {
-                this.cordova.getThreadPool().execute(new NfcTransceive(this, data, callbackContext));
-            }
-            else
-            {
-                if (isoDep == null)
-                {
-                    Log.e(ID, "No Tech");
-                    callbackContext.error("No Tech");
-                }
-                if (!isoDep.isConnected())
-                {
-                    Log.e(ID, "Not connected");
-                    callbackContext.error("Not connected");
-                }
 
-                Log.e(ID, "hex2byte: " + hex2Byte(data.getString(0)));
-                //byte[] commandAPDU = hex2Byte(data.getString(0));
-                byte[] commandAPDU = {
-                    (byte) 0x90, // CLA
-                    (byte) 0x5A, // INS
-                    (byte) 0x0, // P1
-                    (byte) 0x0, // P2
-                    (byte) 0x03, // Lc
-                    (byte) 0x12, // Command Data
-                    (byte) 0x20, // Command Data
-                    (byte) 0xEF, // Command Data
-                    (byte) 0x0 // Le
-                };
+          if (isoDep == null)
+          {
+              Log.e(ID, "No Tech");
+              callbackContext.error("No Tech");
+          }
+          if (!isoDep.isConnected())
+          {
+              Log.e(ID, "Not connected");
+              callbackContext.error("Not connected");
+          }
 
-                byte[] responseAPDU = isoDep.transceive(commandAPDU);
+          byte[] commandAPDU = {
+            (byte) 0x90,
+            (byte) 0x5A, // SELECT FILE
+            (byte) 0x00, // (byte) 0x04,// Direct selection by DF name
+            (byte) 0x00, // Select First record 00 , last re 01 , next record 02
+            (byte) 0x03, // length of command data
+            (byte) 0x11,
+            (byte) 0x20,
+            (byte) 0Xef,
+            (byte) 0X00 // HSL DFname EF2011
+          };
 
-                Log.e(ID, "## THIS IS THE PRIVATE VOID FUNCTION");
+          Log.e(ID, "## COMMANDAPDU SEND: " + byte2Hex(commandAPDU));
 
-                Log.e(ID, "## RECEIVE transceive > " + byte2Hex(responseAPDU));
+          byte[] responseAPDU = isoDep.transceive(commandAPDU);
 
-                callbackContext.success(byte2Hex(responseAPDU));
-            }
+          Log.e(ID, "## RESPONSEAPDU RECEIVED: " + byte2Hex(responseAPDU));
+
+          byte[] commandAPDU2 = {
+            (byte) 0x90, // CLA
+            (byte) 0xBD,
+            (byte) 0x00,
+            (byte) 0x00,
+            (byte) 0x07,
+            (byte) 0x08,
+            (byte) 0x00,
+            (byte) 0x00,
+            (byte) 0x00,
+            (byte) 0x0b,
+            (byte) 0x00,
+            (byte) 0x00,
+            (byte) 0x00
+          };
+
+          Log.e(ID, "## COMMANDAPDU2 SEND: " + byte2Hex(commandAPDU2));
+
+          byte[] responseAPDU2 = isoDep.transceive(commandAPDU2);
+
+          Log.e(ID, "## RESPONSEAPDU2 RECEIVED: " + byte2Hex(responseAPDU2));
+
+          String cardnumber = BCDtoString(responseAPDU2).substring(2, 20);
+
+          Log.e(ID, "## CARD NUMBER: " + cardnumber);
+
+          callbackContext.success(byte2Hex(responseAPDU));
+
         }
         catch (Throwable e)
         {
