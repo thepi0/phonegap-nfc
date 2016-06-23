@@ -332,7 +332,7 @@ public class NfcPlugin
 
           Log.e(ID, "## CARD NUMBER: " + cardnumber);
 
-          callbackContext.success(byte2Hex(cardnumber));
+          callbackContext.success(cardnumber);
 
         }
         catch (Throwable e)
