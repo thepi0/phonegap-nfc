@@ -444,7 +444,7 @@ var nfc = {
 
     // APDU
     transceive: function (data, win, fail) {
-        cordova.exec(win, fail, "NfcPlugin", "transceive", [data]);
+        cordova.exec(win, fail, "NfcPlugin", "transceive", data);
     },
     
     // APDU
