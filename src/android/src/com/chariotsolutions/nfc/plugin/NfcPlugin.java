@@ -369,39 +369,7 @@ public class NfcPlugin
 
           Log.e(ID, "## RESPONSEAPDU RECEIVED: " + byte2Hex(responseAPDU));
 
-          callbackContext.success(byte2Hex(responseAPDU));
-
-          //byte[] commandAPDU = byte2Hex(hexStringToByteArray(jsonarray));
-
-          /*
-          byte[] commandAPDU2 = {
-            (byte) 0x90,
-            (byte) 0x60, // SELECT FILE
-            (byte) 0x00, // (byte) 0x04,// Direct selection by DF name
-            (byte) 0x00, // Select First record 00 , last re 01 , next record 02
-            (byte) 0x00
-          };
-          */
-
-
-
-          /*
-          byte[] commandAPDU = {
-            (byte) 0x90,
-            (byte) 0x60, // SELECT FILE
-            (byte) 0x00, // (byte) 0x04,// Direct selection by DF name
-            (byte) 0x00, // Select First record 00 , last re 01 , next record 02
-            (byte) 0x00
-          };
-
-          Log.e(ID, "## COMMANDAPDU SEND: " + byte2Hex(commandAPDU));
-
-          byte[] responseAPDU = isoDep.transceive(commandAPDU);
-
-          Log.e(ID, "## RESPONSEAPDU RECEIVED: " + byte2Hex(responseAPDU));
-
-          callbackContext.success(byte2Hex(responseAPDU));
-          */
+          callbackContext.success(byte2Hex(responseAPDU) + "," + data.getString(1));
 
         }
         catch (Throwable e)
