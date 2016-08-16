@@ -1,4 +1,3 @@
-cordova.define("com.chariotsolutions.nfc.plugin.NFC", function(require, exports, module) {
 /*jshint  bitwise: false, camelcase: false, quotmark: false, unused: vars */
 /*global cordova, console */
 "use strict";
@@ -653,5 +652,3 @@ window.nfc = nfc;
 window.ndef = ndef;
 window.util = util;
 window.fireNfcTagEvent = fireNfcTagEvent;
-
-});
