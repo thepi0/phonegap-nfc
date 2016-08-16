@@ -19,18 +19,35 @@ import android.nfc.tech.NdefFormatable;
 import android.os.Parcelable;
 import android.util.Log;
 import java.io.IOException;
+import java.io.StringReader;
+import java.io.File;
 import java.math.BigInteger;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.nio.charset.StandardCharsets;
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.XPathFactory;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.stream.StreamResult;
+import javax.xml.transform.dom.DOMSource;
+import org.xml.sax.InputSource;
 import org.apache.cordova.CallbackContext;
 import org.apache.cordova.CordovaPlugin;
 import org.apache.cordova.PluginResult;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.w3c.dom.Document;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 public class NfcPlugin
         extends CordovaPlugin
@@ -281,12 +298,12 @@ public class NfcPlugin
           if (isoDep == null)
           {
               Log.e(ID, "No Tech");
-              callbackContext.error("No Tech");
+              callbackContext.error("NO_TECH");
           }
           if (!isoDep.isConnected())
           {
-              Log.e(ID, "Not connected");
-              callbackContext.error("Not connected");
+              //Log.e(ID, "Not connected");
+              callbackContext.error("NOT_CONNECTED");
           }
 
           byte[] commandAPDU = {
@@ -301,11 +318,7 @@ public class NfcPlugin
             (byte) 0X00 // HSL DFname EF2011
           };
 
-          Log.e(ID, "## COMMANDAPDU SEND: " + byte2Hex(commandAPDU));
-
           byte[] responseAPDU = isoDep.transceive(commandAPDU);
-
-          Log.e(ID, "## RESPONSEAPDU RECEIVED: " + byte2Hex(responseAPDU));
 
           byte[] commandAPDU2 = {
             (byte) 0x90, // CLA
@@ -323,16 +336,8 @@ public class NfcPlugin
             (byte) 0x00
           };
 
-          Log.e(ID, "## COMMANDAPDU2 SEND: " + byte2Hex(commandAPDU2));
-
           byte[] responseAPDU2 = isoDep.transceive(commandAPDU2);
-
-          Log.e(ID, "## RESPONSEAPDU2 RECEIVED: " + byte2Hex(responseAPDU2));
-
           String cardnumber = BCDtoString(responseAPDU2).substring(2, 20);
-
-          Log.e(ID, "## CARD NUMBER: " + cardnumber);
-
           callbackContext.success(cardnumber);
 
         }
@@ -346,30 +351,38 @@ public class NfcPlugin
     private void transceive(final JSONArray data, final CallbackContext callbackContext)
             throws JSONException
     {
-        Log.e(ID, "## transceive < " + data.getString(0));
         try
         {
 
           if (isoDep == null)
           {
-              Log.e(ID, "No Tech");
-              callbackContext.error("No Tech");
+              //Log.e(ID, "No Tech");
+              callbackContext.error("NO_TECH");
           }
           if (!isoDep.isConnected())
           {
-              Log.e(ID, "Not connected");
-              callbackContext.error("Not connected");
+              //Log.e(ID, "Not connected");
+              callbackContext.error("NOT_CONNECTED");
           }
 
-          String jsonarray = data.getString(0);
+          String apdustring = data.getString(0);
 
-          byte[] commandAPDU = hexStringToByteArray(jsonarray);
+          Pattern apdus = Pattern.compile("<apdu id=([^<]*)>([^<]*)</apdu>");
+          Matcher matcher = apdus.matcher(apdustring);
+          String sendback = apdustring;
 
-          byte[] responseAPDU = isoDep.transceive(commandAPDU);
+          while (matcher.find())
+          {
 
-          Log.e(ID, "## RESPONSEAPDU RECEIVED: " + byte2Hex(responseAPDU));
+            byte[] commandAPDU = hexStringToByteArray(matcher.group(2));
+            byte[] responseAPDU = isoDep.transceive(commandAPDU);
+            String id = String.format("id=%s", matcher.group(1));
+            String replacethis = matcher.group(0);
+            String replacewith = "<apdu "+id+">"+byte2Hex(responseAPDU)+"</apdu>";
+            sendback = sendback.replaceFirst(replacethis, replacewith);
+          }
 
-          callbackContext.success(byte2Hex(responseAPDU) + "," + data.getString(1));
+          callbackContext.success(sendback);
 
         }
         catch (Throwable e)
