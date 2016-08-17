@@ -292,104 +292,121 @@ public class NfcPlugin
     private void getcardnumber(final CallbackContext callbackContext)
             throws JSONException
     {
-        try
-        {
-
-          if (isoDep == null)
+      cordova.getThreadPool().execute(new Runnable()
+      {
+          @Override
+          public void run()
           {
-              Log.e(ID, "No Tech");
-              callbackContext.error("NO_TECH");
+            try
+            {
+
+              if (isoDep == null)
+              {
+                  Log.e(ID, "Get card number - No Tech");
+                  callbackContext.error("NO_TECH");
+              }
+              if (!isoDep.isConnected())
+              {
+                  Log.e(ID, "Get card number - Not connected");
+                  callbackContext.error("NOT_CONNECTED");
+              }
+
+              byte[] commandAPDU = {
+                (byte) 0x90,
+                (byte) 0x5A, // SELECT FILE
+                (byte) 0x00, // (byte) 0x04,// Direct selection by DF name
+                (byte) 0x00, // Select First record 00 , last re 01 , next record 02
+                (byte) 0x03, // length of command data
+                (byte) 0x11,
+                (byte) 0x20,
+                (byte) 0Xef,
+                (byte) 0X00 // HSL DFname EF2011
+              };
+
+              byte[] responseAPDU = isoDep.transceive(commandAPDU);
+
+              byte[] commandAPDU2 = {
+                (byte) 0x90, // CLA
+                (byte) 0xBD,
+                (byte) 0x00,
+                (byte) 0x00,
+                (byte) 0x07,
+                (byte) 0x08,
+                (byte) 0x00,
+                (byte) 0x00,
+                (byte) 0x00,
+                (byte) 0x0b,
+                (byte) 0x00,
+                (byte) 0x00,
+                (byte) 0x00
+              };
+
+              byte[] responseAPDU2 = isoDep.transceive(commandAPDU2);
+              String cardnumber = BCDtoString(responseAPDU2).substring(2, 20);
+              callbackContext.success(cardnumber);
+
+            }
+            catch (Throwable e)
+            {
+                Log.e(ID, "## EXCEPTION ", e);
+                callbackContext.error("ERROR IN GET CARD NUMBER - " + e.getMessage());
+            }
           }
-          if (!isoDep.isConnected())
-          {
-              //Log.e(ID, "Not connected");
-              callbackContext.error("NOT_CONNECTED");
-          }
-
-          byte[] commandAPDU = {
-            (byte) 0x90,
-            (byte) 0x5A, // SELECT FILE
-            (byte) 0x00, // (byte) 0x04,// Direct selection by DF name
-            (byte) 0x00, // Select First record 00 , last re 01 , next record 02
-            (byte) 0x03, // length of command data
-            (byte) 0x11,
-            (byte) 0x20,
-            (byte) 0Xef,
-            (byte) 0X00 // HSL DFname EF2011
-          };
-
-          byte[] responseAPDU = isoDep.transceive(commandAPDU);
-
-          byte[] commandAPDU2 = {
-            (byte) 0x90, // CLA
-            (byte) 0xBD,
-            (byte) 0x00,
-            (byte) 0x00,
-            (byte) 0x07,
-            (byte) 0x08,
-            (byte) 0x00,
-            (byte) 0x00,
-            (byte) 0x00,
-            (byte) 0x0b,
-            (byte) 0x00,
-            (byte) 0x00,
-            (byte) 0x00
-          };
-
-          byte[] responseAPDU2 = isoDep.transceive(commandAPDU2);
-          String cardnumber = BCDtoString(responseAPDU2).substring(2, 20);
-          callbackContext.success(cardnumber);
-
-        }
-        catch (Throwable e)
-        {
-            Log.e(ID, "## EXCEPTION ", e);
-            callbackContext.error("Ups " + e.getMessage());
-        }
+      });
     }
 
     private void transceive(final JSONArray data, final CallbackContext callbackContext)
             throws JSONException
     {
-        try
-        {
-
-          if (isoDep == null)
+      cordova.getThreadPool().execute(new Runnable()
+      {
+          @Override
+          public void run()
           {
-              //Log.e(ID, "No Tech");
-              callbackContext.error("NO_TECH");
+            try
+            {
+
+              if (isoDep == null)
+              {
+                  Log.e(ID, "Transceive - No Tech");
+                  callbackContext.error("NO_TECH");
+              }
+              if (!isoDep.isConnected())
+              {
+                  Log.e(ID, "Transceive - Not connected");
+                  callbackContext.error("NOT_CONNECTED");
+              }
+
+              String apdustring = data.getString(0);
+
+              Pattern apdus = Pattern.compile("<apdu id=([^<]*)>([^<]*)</apdu>");
+              Matcher matcher = apdus.matcher(apdustring);
+              String sendback = apdustring;
+
+              while (matcher.find())
+              {
+
+                byte[] commandAPDU = hexStringToByteArray(matcher.group(2));
+                byte[] responseAPDU = isoDep.transceive(commandAPDU);
+                String id = String.format("id=%s", matcher.group(1));
+                String replacethis = matcher.group(0);
+                String replacewith = "<apdu "+id+">"+byte2Hex(responseAPDU)+"</apdu>";
+
+                Log.e(ID, "TRANSCEIVE - Original APDU: " + replacethis + " WITH RESPONSE: " + byte2Hex(responseAPDU) + " --- ID: " + id);
+
+                sendback = sendback.replaceFirst(replacethis, replacewith);
+              }
+
+              callbackContext.success(sendback);
+
+            }
+            catch (Throwable e)
+            {
+                Log.e(ID, "## EXCEPTION ", e);
+                callbackContext.error("ERROR IN TRANSCEIVE - " + e.getMessage());
+            }
           }
-          if (!isoDep.isConnected())
-          {
-              //Log.e(ID, "Not connected");
-              callbackContext.error("NOT_CONNECTED");
-          }
-
-          String apdustring = data.getString(0);
-
-          Pattern apdus = Pattern.compile("<apdu id=([^<]*)>([^<]*)</apdu>");
-          Matcher matcher = apdus.matcher(apdustring);
-          String sendback = apdustring;
-
-          while (matcher.find())
-          {
-
-            byte[] commandAPDU = hexStringToByteArray(matcher.group(2));
-            byte[] responseAPDU = isoDep.transceive(commandAPDU);
-            String id = String.format("id=%s", matcher.group(1));
-            String replacethis = matcher.group(0);
-            String replacewith = "<apdu "+id+">"+byte2Hex(responseAPDU)+"</apdu>";
-            sendback = sendback.replaceFirst(replacethis, replacewith);
-          }
-
-          callbackContext.success(sendback);
-
-        }
-        catch (Throwable e)
-        {
-            Log.e(ID, "## EXCEPTION ", e);
-            callbackContext.error("Ups " + e.getMessage());
-        }
+      });
     }
 
     public static byte[] hexStringToByteArray(String s) {
@@ -1183,20 +1200,20 @@ public class NfcPlugin
                 }
                 if (nfcPlugin.tag == null)
                 {
-                    Log.e(ID, "No Tag");
-                    callbackContext.error("No Tag");
+                    Log.e(ID, "NFC CONNECT - No Tag");
+                    callbackContext.error("NO_TAG");
                 }
 
                 nfcPlugin.isoDep = IsoDep.get(tag);
                 if (nfcPlugin.isoDep == null)
                 {
-                    Log.e(ID, "No Tech");
-                    callbackContext.error("No Tech");
+                    Log.e(ID, "NFC CONNECT - No Tech");
+                    callbackContext.error("NO_TECH");
                 }
 
                 Log.e(ID, "## connect... ");
                 nfcPlugin.isoDep.connect();
-                nfcPlugin.isoDep.setTimeout(3000);
+                nfcPlugin.isoDep.setTimeout(5000);
                 Log.e(ID, "## connected ");
 
                 nfcPlugin.fireConnected(nfcPlugin.tag);
@@ -1231,14 +1248,14 @@ public class NfcPlugin
                 if (nfcPlugin.isoDep == null)
                 {
                     // TODO: no error - just return
-                    Log.e(ID, "No Tech");
-                    callbackContext.error("No Tech");
+                    Log.e(ID, "NFC CLOSE - No Tech");
+                    callbackContext.error("NO_TECH");
                 }
                 if (!isoDep.isConnected())
                 {
                     // TODO: no error - just return
-                    Log.e(ID, "Not connected");
-                    callbackContext.error("Not connected");
+                    Log.e(ID, "NFC CLOSE - Not connected");
+                    callbackContext.error("NOT_CONNECTED");
                 }
 
                 Log.e(ID, "## close... ");
@@ -1278,13 +1295,13 @@ public class NfcPlugin
             {
                 if (nfcPlugin.isoDep == null)
                 {
-                    Log.e(ID, "No Tech");
-                    callbackContext.error("No Tech");
+                    Log.e(ID, "NFC TRANSCEIVE - No Tech");
+                    callbackContext.error("NO_TECH");
                 }
                 if (!nfcPlugin.isoDep.isConnected())
                 {
-                    Log.e(ID, "Not connected");
-                    callbackContext.error("Not connected");
+                    Log.e(ID, "NFC TRANSCEIVE - Not connected");
+                    callbackContext.error("NOT_CONNECTED");
                 }
 
                 Log.e(ID, "hex2byte: " + nfcPlugin.hex2Byte(data.getString(0)));
