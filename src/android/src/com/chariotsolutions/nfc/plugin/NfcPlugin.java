@@ -302,12 +302,12 @@ public class NfcPlugin
 
               if (isoDep == null)
               {
-                  Log.e(ID, "Get card number - No Tech");
+                  //Log.e(ID, "Get card number - No Tech");
                   callbackContext.error("NO_TECH");
               }
               if (!isoDep.isConnected())
               {
-                  Log.e(ID, "Get card number - Not connected");
+                  //Log.e(ID, "Get card number - Not connected");
                   callbackContext.error("NOT_CONNECTED");
               }
 
@@ -348,7 +348,7 @@ public class NfcPlugin
             }
             catch (Throwable e)
             {
-                Log.e(ID, "## EXCEPTION ", e);
+                //Log.e(ID, "## EXCEPTION ", e);
                 callbackContext.error("ERROR IN GET CARD NUMBER - " + e.getMessage());
             }
           }
@@ -368,20 +368,20 @@ public class NfcPlugin
 
               if (isoDep == null)
               {
-                  Log.e(ID, "Transceive - No Tech");
+                  //Log.e(ID, "Transceive - No Tech");
                   callbackContext.error("NO_TECH");
               }
               if (!isoDep.isConnected())
               {
-                  Log.e(ID, "Transceive - Not connected");
+                  //Log.e(ID, "Transceive - Not connected");
                   callbackContext.error("NOT_CONNECTED");
               }
 
               String apdustring = data.getString(0);
-
               Pattern apdus = Pattern.compile("<apdu id=([^<]*)>([^<]*)</apdu>");
               Matcher matcher = apdus.matcher(apdustring);
               String sendback = apdustring;
+              int trycount = 0;
 
               while (matcher.find())
               {
@@ -391,10 +391,8 @@ public class NfcPlugin
                 String id = String.format("id=%s", matcher.group(1));
                 String replacethis = matcher.group(0);
                 String replacewith = "<apdu "+id+">"+byte2Hex(responseAPDU)+"</apdu>";
-
-                Log.e(ID, "TRANSCEIVE - Original APDU: " + replacethis + " WITH RESPONSE: " + byte2Hex(responseAPDU) + " --- ID: " + id);
-
                 sendback = sendback.replaceFirst(replacethis, replacewith);
+
               }
 
               callbackContext.success(sendback);
@@ -402,7 +400,7 @@ public class NfcPlugin
             }
             catch (Throwable e)
             {
-                Log.e(ID, "## EXCEPTION ", e);
+                //Log.e(ID, "## EXCEPTION ", e);
                 callbackContext.error("ERROR IN TRANSCEIVE - " + e.getMessage());
             }
           }
