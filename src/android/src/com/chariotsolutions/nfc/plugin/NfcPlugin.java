@@ -108,6 +108,7 @@ public class NfcPlugin
     {
         Log.i("TEST", action);
 
+        /*
         if (data.length() == 0)
         {
             Log.d(ID, "execute command " + action);
@@ -116,12 +117,14 @@ public class NfcPlugin
         {
             Log.d(ID, "execute command " + action + " with " + data.toString());
         }
+        
 
         if (!getNfcStatus().equals(STATUS_NFC_OK))
         {
             callbackContext.error(getNfcStatus());
             return true; // short circuit
         }
+        */
 
         createPendingIntent();
 
