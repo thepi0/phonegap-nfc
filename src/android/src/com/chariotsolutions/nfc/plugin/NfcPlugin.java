@@ -234,15 +234,15 @@ public class NfcPlugin
     private void connect(final CallbackContext callbackContext)
             throws JSONException
     {
-        Log.e(ID, "## connect ");
+        //Log.e(ID, "## connect ");
         try
         {
             this.cordova.getThreadPool().execute(new NfcConnect(this, callbackContext));
         }
         catch (Throwable e)
         {
-            Log.e(ID, "## EXCEPTION ", e);
-            callbackContext.error("Ups " + e.getMessage());
+            //Log.e(ID, "## EXCEPTION ", e);
+            callbackContext.error("COULD_NOT_CONNECT");
         }
     }
 
@@ -252,7 +252,7 @@ public class NfcPlugin
     private void close(CallbackContext callbackContext)
             throws JSONException
     {
-        Log.e(ID, "## close ");
+        //Log.e(ID, "## close ");
         try
         {
             this.cordova.getThreadPool().execute(new NfcClose(this, callbackContext));
@@ -260,7 +260,7 @@ public class NfcPlugin
         catch (Throwable e)
         {
             Log.e(ID, "## EXCEPTION ", e);
-            callbackContext.error("Ups " + e.getMessage());
+            callbackContext.error("COULD_NOT_CLOSE");
         }
     }
 
@@ -349,7 +349,7 @@ public class NfcPlugin
             catch (Throwable e)
             {
                 //Log.e(ID, "## EXCEPTION ", e);
-                callbackContext.error("ERROR IN GET CARD NUMBER - " + e.getMessage());
+                callbackContext.error("ERROR_GETTING_CARD_NUMBER, " + e.getMessage());
             }
           }
       });
@@ -401,7 +401,7 @@ public class NfcPlugin
             catch (Throwable e)
             {
                 //Log.e(ID, "## EXCEPTION ", e);
-                callbackContext.error("ERROR IN TRANSCEIVE - " + e.getMessage());
+                callbackContext.error("ERROR_IN_TRANSCEIVE, " + e.getMessage());
             }
           }
       });
@@ -1198,21 +1198,21 @@ public class NfcPlugin
                 }
                 if (nfcPlugin.tag == null)
                 {
-                    Log.e(ID, "NFC CONNECT - No Tag");
+                    //Log.e(ID, "NFC CONNECT - No Tag");
                     callbackContext.error("NO_TAG");
                 }
 
                 nfcPlugin.isoDep = IsoDep.get(tag);
                 if (nfcPlugin.isoDep == null)
                 {
-                    Log.e(ID, "NFC CONNECT - No Tech");
+                    //Log.e(ID, "NFC CONNECT - No Tech");
                     callbackContext.error("NO_TECH");
                 }
 
-                Log.e(ID, "## connect... ");
+                //Log.e(ID, "## connect... ");
                 nfcPlugin.isoDep.connect();
-                nfcPlugin.isoDep.setTimeout(5000);
-                Log.e(ID, "## connected ");
+                nfcPlugin.isoDep.setTimeout(10000);
+                //Log.e(ID, "## connected ");
 
                 nfcPlugin.fireConnected(nfcPlugin.tag);
 
@@ -1220,7 +1220,8 @@ public class NfcPlugin
             }
             catch (IOException ex)
             {
-                Log.e(ID, "Can't connect to IsoDep", ex);
+                //Log.e(ID, "ERROR_CONNECTING_ISODEP", ex);
+                callbackContext.error("ERROR_CONNECTING_ISODEP, " + ex);
             }
         }
     }
