@@ -381,7 +381,6 @@ public class NfcPlugin
               Pattern apdus = Pattern.compile("<apdu id=([^<]*)>([^<]*)</apdu>");
               Matcher matcher = apdus.matcher(apdustring);
               String sendback = apdustring;
-              int trycount = 0;
 
               while (matcher.find())
               {
