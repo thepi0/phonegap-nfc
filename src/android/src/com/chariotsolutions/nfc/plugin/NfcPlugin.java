@@ -119,13 +119,13 @@ public class NfcPlugin
             Log.d(ID, "execute command " + action + " with " + data.toString());
         }
         
-
+        */
+        
         if (!getNfcStatus().equals(STATUS_NFC_OK))
         {
             callbackContext.error(getNfcStatus());
             return true; // short circuit
         }
-        */
 
         createPendingIntent();
 
