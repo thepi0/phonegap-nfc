@@ -106,9 +106,10 @@ public class NfcPlugin
     public boolean execute(String action, JSONArray data, CallbackContext callbackContext)
             throws JSONException
     {
+        /*
         Log.i("TEST", action);
 
-        /*
+        
         if (data.length() == 0)
         {
             Log.d(ID, "execute command " + action);
