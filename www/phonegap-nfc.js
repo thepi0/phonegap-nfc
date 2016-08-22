@@ -432,13 +432,13 @@ var nfc = {
 
     // APDU
     connect: function (callback, win, fail) {
-	document.addEventListener("nfc-connected", callback, false);
+	      document.addEventListener("nfc-connected", callback, false);
         cordova.exec(win, fail, "NfcPlugin", "connect", []);
     },
 
     // APDU
     close: function (callback, win, fail) {
-	document.removeEventListener("nfc-connected", callback, false);
+	      document.removeEventListener("nfc-connected", callback, false);
         cordova.exec(win, fail, "NfcPlugin", "close", []);
     },
 
@@ -446,12 +446,12 @@ var nfc = {
     transceive: function (data, win, fail) {
         cordova.exec(win, fail, "NfcPlugin", "transceive", data);
     },
-    
+
     // APDU
     getcardnumber: function (win, fail) {
         cordova.exec(win, fail, "NfcPlugin", "getcardnumber", []);
     }
-    
+
 };
 
 var util = {
@@ -525,8 +525,8 @@ var util = {
         }
         return bytesAsHexString;
     },
-     
-    // This function can be removed if record.type is changed to a String   
+
+    // This function can be removed if record.type is changed to a String
     /**
      * Returns true if the record's TNF and type matches the supplied TNF and type.
      *
