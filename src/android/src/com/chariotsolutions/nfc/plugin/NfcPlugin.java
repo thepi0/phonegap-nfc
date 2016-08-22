@@ -56,7 +56,9 @@ public class NfcPlugin
     private static final String UNSHARE_TAG = "unshareTag";
     private static final String HANDOVER = "handover"; // Android Beam
     private static final String STOP_HANDOVER = "stopHandover";
+    private static final String ENABLED = "enabled";
     private static final String INIT = "init";
+    private static final String SHOW_SETTINGS = "showSettings";
 
     private static final String NDEF = "ndef";
     private static final String NDEF_MIME = "ndef-mime";
@@ -90,6 +92,11 @@ public class NfcPlugin
     public boolean execute(String action, JSONArray data, CallbackContext callbackContext)
             throws JSONException
     {
+
+        if (action.equalsIgnoreCase(SHOW_SETTINGS)) {
+            showSettings(callbackContext);
+            return true;
+        }
 
         if (!getNfcStatus().equals(STATUS_NFC_OK))
         {
@@ -167,6 +174,12 @@ public class NfcPlugin
         else if (action.equalsIgnoreCase(INIT))
         {
             init(callbackContext);
+
+        }
+        else if (action.equalsIgnoreCase(ENABLED)) {
+          // status is checked before every call
+          // if code made it here, NFC is enabled
+          callbackContext.success(STATUS_NFC_OK);
 
         }
         else if (action.equalsIgnoreCase(CONNECT))
@@ -635,6 +648,17 @@ public class NfcPlugin
     {
         stopNdefBeam();
         handoverCallback = null;
+        callbackContext.success();
+    }
+
+    private void showSettings(CallbackContext callbackContext) {
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.JELLY_BEAN) {
+            Intent intent = new Intent(android.provider.Settings.ACTION_NFC_SETTINGS);
+            getActivity().startActivity(intent);
+        } else {
+            Intent intent = new Intent(android.provider.Settings.ACTION_WIRELESS_SETTINGS);
+            getActivity().startActivity(intent);
+        }
         callbackContext.success();
     }
 
