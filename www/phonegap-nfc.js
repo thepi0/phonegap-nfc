@@ -450,7 +450,15 @@ var nfc = {
     // APDU
     getcardnumber: function (win, fail) {
         cordova.exec(win, fail, "NfcPlugin", "getcardnumber", []);
-    }
+    },
+
+    enabled: function (win, fail) {
+        cordova.exec(win, fail, "NfcPlugin", "enabled", [[]]);
+    },
+
+    showSettings: function (win, fail) {
+       cordova.exec(win, fail, "NfcPlugin", "showSettings", []);
+   }
 
 };
 
