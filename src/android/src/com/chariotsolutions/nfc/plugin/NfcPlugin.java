@@ -363,7 +363,6 @@ public class NfcPlugin
               Pattern apdus = Pattern.compile("<apdu id=([^<]*)>([^<]*)</apdu>");
               Matcher matcher = apdus.matcher(apdustring);
               String sendback = apdustring;
-              //Log.e(ID, "--------------- RECEIVED APDU FROM WEBSOCKET --------------- " + apdustring);
 
               while (matcher.find())
               {
@@ -381,7 +380,6 @@ public class NfcPlugin
                   String replacewith = "<apdu "+id+">"+byte2Hex(responseAPDU)+"</apdu>";
                   String currentResponseApdu = byte2Hex(responseAPDU);
 
-                  //Log.e(ID, "COMMAND APDU: " + matcher.group(2) + " - ID: " + id + " - RESPONSE: " + byte2Hex(responseAPDU));
                   sendback = sendback.replaceFirst(replacethis, replacewith);
 
                   String containsAF = currentResponseApdu.length() > 2 ? currentResponseApdu.substring(currentResponseApdu.length() - 2) : currentResponseApdu;
@@ -391,8 +389,6 @@ public class NfcPlugin
                     byte[] commandAPDU2 = hexStringToByteArray("90af000000");
                     byte[] responseAPDU2 = isoDep.transceive(commandAPDU2);
                     String currentResponseApdu2 = byte2Hex(responseAPDU2);
-
-                    //Log.e(ID, "FIRE NEXT APDU STRAIGHT AWAY - RESPONSE ----------> " + currentResponseApdu2);
 
                     JSONObject item1 = new JSONObject();
                     item1.put("id", "2");
@@ -407,8 +403,6 @@ public class NfcPlugin
                       byte[] responseAPDU3 = isoDep.transceive(commandAPDU3);
                       String currentResponseApdu3 = byte2Hex(responseAPDU3);
 
-                      //Log.e(ID, "FIRE NEXT APDU STRAIGHT AWAY - RESPONSE ----------> " + currentResponseApdu3);
-
                       JSONObject item2 = new JSONObject();
                       item2.put("id", "3");
                       item2.put("response", currentResponseApdu3);
@@ -420,8 +414,6 @@ public class NfcPlugin
 
                 } else {
 
-                  //Log.e(ID, "REMAINING JSONARRAY: " + jsonarray.toString());
-
                   for (int i = 0; i < jsonarray.length(); ++i) {
                       JSONObject listitem = jsonarray.getJSONObject(i);
                       String itemid = listitem.getString("id");
@@ -432,8 +424,6 @@ public class NfcPlugin
                         String replacethis = matcher.group(0);
                         String id = String.format("id=\"%s\"", itemid);
                         String replacewith = "<apdu "+id+">"+itemresponse+"</apdu>";
-                        //Log.e(ID, "REPLACE THIS: " + replacethis);
-                        //Log.e(ID, "WITH THIS: " + replacewith);
                         sendback = sendback.replaceFirst(replacethis, replacewith);
                         jsonarray.remove(i);
                         break;
@@ -444,9 +434,7 @@ public class NfcPlugin
                 }
 
               }
-
-              //Log.i(ID, "SENDBACK: " + sendback);
-
+              
               callbackContext.success(sendback);
 
             }
