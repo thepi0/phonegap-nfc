@@ -359,6 +359,7 @@ public class NfcPlugin
                   callbackContext.error("NOT_CONNECTED");
               }
 
+              /* NOTE: Whole function should be refactored - only for demo */
               String apdustring = data.getString(0);
               Pattern apdus = Pattern.compile("<apdu id=([^<]*)>([^<]*)</apdu>");
               Matcher matcher = apdus.matcher(apdustring);
@@ -391,6 +392,7 @@ public class NfcPlugin
                     String currentResponseApdu2 = byte2Hex(responseAPDU2);
 
                     JSONObject item1 = new JSONObject();
+                    /* TODO: Make id dynamic */
                     item1.put("id", "2");
                     item1.put("response", currentResponseApdu2);
                     jsonarray.put(item1);
@@ -404,6 +406,7 @@ public class NfcPlugin
                       String currentResponseApdu3 = byte2Hex(responseAPDU3);
 
                       JSONObject item2 = new JSONObject();
+                      /* TODO: Make id dynamic */
                       item2.put("id", "3");
                       item2.put("response", currentResponseApdu3);
                       jsonarray.put(item2);
